@@ -1,0 +1,46 @@
+services:
+  # 1. MongoDB Service
+  mongo:
+    image: mongo:6.0
+    container_name: mern_mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - mern-network
+
+  # 2. Express Backend Service
+  backend:
+    build: ./backend
+    container_name: mern_backend
+    restart: always
+    ports:
+      - "5001:5000"
+    environment:
+      - PORT=5000
+      - MONGO_URI=mongodb://mongo:27017/merndb
+    depends_on:
+      - mongo
+    networks:
+      - mern-network
+
+  # 3. React Frontend Service (Nginx Web Server)
+  frontend:
+    build: ./frontend
+    container_name: mern_frontend
+    restart: always
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend
+    networks:
+      - mern-network
+
+volumes:
+  mongo-data:
+
+networks:
+  mern-network:
+    driver: bridge
